@@ -16,12 +16,17 @@ int main(int argc, char **argv)
         while( ( option = getopt_long(argc, argv, short_options, long_options, NULL) ) != -1 )
         {
                 switch(option){
-                        case 't': printf("TCP! enumTCP = %d\n", TCP); break;
+                        case 't': list_connections(TCP);
+                                  printf("TCP! enumTCP = %d\n", TCP); break;
                         case 'u': printf("UDP! enumUDP = %d\n", UDP); break;
                         case 'f': printf("Filter!\n"); break;
                         default: printf("help!\n");
                 }
         }
+        
+        char *filterStr = strdup(argv[argc-1]);
+        printf("filter string = %s\n", filterStr);
+
 
         exit(EXIT_SUCCESS);
 }
