@@ -125,15 +125,21 @@ void process_traversal()
                 
                 // get filename and process id
                 char process_stat_path[50] = {0};
-                char buffer[50] = {0};
-                char filename[20] = {0};
+                char buffer[1000] = {0};
+                char filename[1000] = {0};
                 pid_t pid;
+
                 sprintf(process_stat_path, "/proc/%s/stat", process_dir->d_name);
                 int statfd = open(process_stat_path, O_RDONLY);
                 read(statfd, buffer, 50);
                 sscanf(buffer, "%d (%[^)]", &pid, &filename);
-                // printf("pid = %d\t, filename = %s\n", pid, filename);
 
+                // ** if you want to get parameter, go to parse /proc/pid/cmdline files **
+                // sprintf(process_stat_path, "/proc/%s/cmdline", process_dir->d_name);
+                // int cmdfd = open(process_stat_path, O_RDONLY);
+                // sscanf(process_dir->d_name, "%d", &pid);
+                // read(cmdfd, filename, 1000);
+                // sscanf(buffer, "%s",&filename);
 
                 // get all reference inode
                 char fd_dirpath[50] = {0};
@@ -185,13 +191,21 @@ void show_infomation()
                         else printf("udp6\t");
                 }
 
+                if(atoi(connection[i].local_port) == 0){ 
+                        memset(connection[i].local_port, 0, 10);
+                        strcpy(connection[i].local_port, "*");
+                }
+                if(atoi(connection[i].remote_port) == 0){
+                        memset(connection[i].remote_port, 0, 10);
+                        strcpy(connection[i].remote_port, "*");
+                }
+
                 printf("%s:%-25s%s:%-15s\t%d/%-20s\n", 
                         connection[i].local_ip, connection[i].local_port, 
                         connection[i].remote_ip, connection[i].remote_port, 
                         connection[i].pid, connection[i].programName
                 );
         
-                // "%-5s %-30s %-30s %s/%s
         }
         printf("\n");
 }
