@@ -8,7 +8,7 @@ void list_connections(Protocal protocal)
         
         if(protocal == TCP){
                 ipv6(TCP);
-                
+        
         }
         
         if(protocal == UDP){
@@ -88,48 +88,44 @@ void ipv6(Protocal protocal)
         int fd = open(file, O_RDONLY);
         int size = read(fd, buffer, BUFFER_SIZE);
         
-        unsigned int hex_localAddr, hex_remoteAddr;
-        char localAddr[50], remoteAddr[50];
-
+        char hex_localAddr[50];
         char hex_localPort[10], localPort[10];
+
+        char hex_remoteAddr[50];
         char hex_remotePort[10], remotePort[10];
+
         int inode;
         
         char *line = strtok(buffer, "\n");
         line = strtok(NULL, "\n"); // remove header 
         
-        
+        // 8802:0120:50D7:0140:36A3:B17C:A9BA:35F1
 
         while(line != NULL)
         {       
-                sscanf(line,"%*s %x:%s %x:%s %*s %*s %*s %*s %*s %*s %d %*s ", &hex_localAddr, &hex_localPort, &hex_remoteAddr, &hex_remotePort, &inode);
+                
+                sscanf(line,"%*s %[^:]%s %[^:]%s %*s %*s %*s %*s %*s %*s %d %*s ", &hex_localAddr, &hex_localPort, &hex_remoteAddr, &hex_remotePort, &inode);
                 
                 sprintf(localPort, "%ld", strtol(hex_localPort, NULL, 16));
                 sprintf(remotePort, "%ld", strtol(hex_remotePort, NULL, 16));
                 
-                unsigned hex_localIP[4], hex_remoteIP[4];
-	        struct in6_addr ip_localPack, ip_remotePack;
 
-	        sscanf(hex_localAddr, "%8x%8x%8x%8x", &hex_localIP[0], &hex_localIP[1], &hex_localIP[2], &hex_localIP[3]);
-                sscanf(hex_remoteAddr, "%8x%8x%8x%8x", &hex_remoteIP[0], &hex_remoteIP[1], &hex_remoteIP[2], &hex_remoteIP[3]);
+                char local_ip[100] = {0};
+                char remote_ip[100] = {0};
+                struct in6_addr ip_localPack, ip_remotePack;
 
-	        for(int i = 0 ; i < 16 ; i+=4)
-                { 
-                        sscanf(hex_localIP[i],  "%2hhu%2hhu%2hhu%2hhu", &ip_localPack.s6_addr[i], &ip_localPack.s6_addr[i+1], &ip_localPack.s6_addr[i+2], &ip_localPack.s6_addr[i+3]);
-                        sscanf(hex_remoteIP[i], "%2hhu%2hhu%2hhu%2hhu", &ip_remotePack.s6_addr[i], &ip_remotePack.s6_addr[i+1], &ip_remotePack.s6_addr[i+2], &ip_remotePack.s6_addr[i+3]);
-                
+                for(int i = 0 ; i < 16; i++ )
+                {
+                        sscanf(hex_localAddr  + 2*i, "%2hhx", &ip_localPack.s6_addr[i]);
+                        sscanf(hex_remoteAddr + 2*i, "%2hhx", &ip_remotePack.s6_addr[i]);
                 }
-	        
-                char temp[100] = {0};
-                char tmp[100] = {0};
 
-                inet_ntop(AF_INET6, &ip_localPack,temp, INET6_ADDRSTRLEN);
-                inet_ntop(AF_INET6, &ip_remotePack,tmp, INET6_ADDRSTRLEN);
+                inet_ntop(AF_INET6, &ip_localPack ,local_ip, INET6_ADDRSTRLEN);
+                inet_ntop(AF_INET6, &ip_remotePack,remote_ip, INET6_ADDRSTRLEN);
+                
 
-                printf("local_ip = %s \t remote_ip = %s \n",temp, tmp);
-
-
-
+                // printf("ipv6:\tremote address = %s:%s\tlocal address = %s:%s \n", hex_remoteAddr, hex_remotePort, hex_localAddr, hex_localPort);
+                printf("ipv6:\tlocal address = %s:%s\tremote address = %s:%s \n", local_ip, localPort, remote_ip, remotePort);
 
                 // connection[count].protocal = protocal;
                 // connection[count].version = IPv6;
