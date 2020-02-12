@@ -39,10 +39,10 @@ typedef struct netTable {
 
 
 void init_netTable(netTable*);
-void list_connections(Protocal);
+void list_connections(Protocal, char*);
 void process_traversal();
-void show_infomation();
+void hex2ipv6(char *, char *);
+void show_infomation(char*);
 void ipv4(Protocal);
 void ipv6(Protocal);
-void hex2ipv6(char *, char *);
 #endif

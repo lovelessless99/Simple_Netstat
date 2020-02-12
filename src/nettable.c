@@ -3,7 +3,7 @@
 Connection connection[MAX_CONNECTIONS];
 int count = 0;
 
-void list_connections(Protocal protocal)
+void list_connections(Protocal protocal, char* filter)
 {
         if(protocal == TCP){ ipv4(TCP); ipv6(TCP); }
         if(protocal == UDP){ ipv4(UDP); ipv6(UDP); }
@@ -12,7 +12,7 @@ void list_connections(Protocal protocal)
         printf("%-5s   %-28s %-30s %s\n","Proto","Local Address","Foreign Address","PID/Program name and arguments");
         // printf("Proto\tLocal Address\tForeign Address\tPID/Program name and arguments\n");
         process_traversal();
-        show_infomation();
+        show_infomation(filter);
         
         // reset
         memset(connection, 0, sizeof(Connection) * MAX_CONNECTIONS);
@@ -190,17 +190,19 @@ void process_traversal()
         closedir(rootdir);
 }
 
-void show_infomation()
+void show_infomation(char* filter)
 {
         for(int i = 0 ; i < count; i++)
         {
+                char print_string[1024] = {0};
+
                 if ( connection[i].protocal == TCP ){
-                        if (connection[i].version == IPv4) printf("tcp\t");
-                        else printf("tcp6\t");
+                        if (connection[i].version == IPv4) sprintf(print_string, "tcp\t");
+                        else sprintf(print_string, "tcp6\t");
                 }
                 else if ( connection[i].protocal == UDP){
-                        if (connection[i].version == IPv4) printf("udp\t");
-                        else printf("udp6\t");
+                        if (connection[i].version == IPv4) sprintf(print_string, "udp\t");
+                        else sprintf(print_string, "udp6\t");
                 }
 
                 if(atoi(connection[i].local_port) == 0){ 
@@ -212,12 +214,15 @@ void show_infomation()
                         strcpy(connection[i].remote_port, "*");
                 }
 
-                printf("%s:%-25s%s:%-15s\t%d/%-20s\n", 
+                char temp[200] = {0};
+                sprintf(temp, "%s:%-25s%s:%-15s\t%d/%-20s\n",
                         connection[i].local_ip, connection[i].local_port, 
                         connection[i].remote_ip, connection[i].remote_port, 
                         connection[i].pid, connection[i].programName
                 );
-        
+                strcat(print_string, temp);
+                
+                if( filter == NULL || strstr(print_string, filter) ) { printf("%s", print_string); } 
         }
         printf("\n");
 }
