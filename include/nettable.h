@@ -44,4 +44,5 @@ void process_traversal();
 void show_infomation();
 void ipv4(Protocal);
 void ipv6(Protocal);
+void hex2ipv6(char *, char *);
 #endif

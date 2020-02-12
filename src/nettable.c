@@ -54,7 +54,7 @@ void ipv4(Protocal protocal)
                 sprintf(connection[count].local_port, "%ld", strtol(hex_localPort, NULL, 16));
                 sprintf(connection[count].remote_port, "%ld", strtol(hex_remotePort, NULL, 16));
 
-                // Method 1 : order is inverse !
+                // Method 1 : order is Bigendian, so we need to translate to little endian !
                 // sprintf(localAddr  , "%d.%d.%d.%d" , hex_localAddr & 0x000000FF , (hex_localAddr  & 0x0000FF00) >> 8, (hex_localAddr  & 0x00FF0000) >> 16, (hex_localAddr  & 0xFF000000) >> 24 );
                 // sprintf(remoteAddr  , "%d.%d.%d.%d", hex_remoteAddr & 0x000000FF, (hex_remoteAddr & 0x0000FF00) >> 8, (hex_remoteAddr & 0x00FF0000) >> 16, (hex_remoteAddr & 0xFF000000) >> 24 );
                 
@@ -94,25 +94,37 @@ void ipv6(Protocal protocal)
                 connection[count].protocal = protocal;
                 connection[count].version = IPv6;
                 
-                sprintf(connection[count].local_port, "%ld", strtol(hex_localPort, NULL, 16));
+                sprintf(connection[count].local_port,  "%ld", strtol(hex_localPort,  NULL, 16));
                 sprintf(connection[count].remote_port, "%ld", strtol(hex_remotePort, NULL, 16));
                 
-                struct in6_addr ip_localPack, ip_remotePack;
-
-                for(int i = 0 ; i < 16; i++ )
-                {
-                        sscanf(hex_localAddr  + 2*i, "%2hhx", &ip_localPack.s6_addr[i]);
-                        sscanf(hex_remoteAddr + 2*i, "%2hhx", &ip_remotePack.s6_addr[i]);
-                }
-
-                inet_ntop(AF_INET6, &ip_localPack ,connection[count].local_ip , INET6_ADDRSTRLEN);
-                inet_ntop(AF_INET6, &ip_remotePack,connection[count].remote_ip, INET6_ADDRSTRLEN);
+                hex2ipv6(hex_localAddr, connection[count].local_ip);
+                hex2ipv6(hex_remoteAddr, connection[count].remote_ip);
                 
                 line = strtok(NULL, "\n");
                 count++;
         }
 }
 
+void hex2ipv6(char *hex_address, char *ip)
+{
+        struct in6_addr ip_Pack;
+
+        /* Big Endian to Little Endian */
+
+        for(int i = 0 ; i < 4; i++ )
+        {
+                char tmp[8] = {0};
+                sscanf(hex_address + 8*i, "%8s", &tmp);
+                long address = strtol(tmp, NULL, 16);
+                ip_Pack.s6_addr[4*i+3] = (address & 0xFF000000) >> 24;
+                ip_Pack.s6_addr[4*i+2] = (address & 0x00FF0000) >> 16;
+                ip_Pack.s6_addr[4*i+1] = (address & 0x0000FF00) >> 8 ;
+                ip_Pack.s6_addr[4*i  ] = (address & 0x000000FF); 
+        
+        }
+        
+        inet_ntop(AF_INET6, &ip_Pack ,ip, INET6_ADDRSTRLEN);
+}
 
 void process_traversal()
 {
