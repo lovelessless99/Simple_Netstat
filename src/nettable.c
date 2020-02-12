@@ -5,17 +5,18 @@ int count = 0;
 
 void list_connections(Protocal protocal)
 {
-        
-        if(protocal == TCP){
-                ipv6(TCP);
-        
-        }
-        
-        if(protocal == UDP){
+        if(protocal == TCP){ ipv4(TCP); ipv6(TCP); }
+        if(protocal == UDP){ ipv4(UDP); ipv6(UDP); }
 
-
-        }
-
+        (protocal == TCP)? printf("List of TCP Connections:\n") : printf("List of UDP Connections:\n");
+        printf("%-5s   %-28s %-30s %s\n","Proto","Local Address","Foreign Address","PID/Program name and arguments");
+        // printf("Proto\tLocal Address\tForeign Address\tPID/Program name and arguments\n");
+        process_traversal();
+        show_infomation();
+        
+        // reset
+        memset(connection, 0, sizeof(Connection) * MAX_CONNECTIONS);
+        count = 0;
 }
 
 void ipv4(Protocal protocal)
@@ -45,37 +46,30 @@ void ipv4(Protocal protocal)
 
         while(line != NULL)
         {       
-                sscanf(line,"%*s %x:%s %x:%s %*s %*s %*s %*s %*s %*s %d %*s ", &hex_localAddr, &hex_localPort, &hex_remoteAddr, &hex_remotePort, &inode);
-                
-                sprintf(localPort, "%ld", strtol(hex_localPort, NULL, 16));
-                sprintf(remotePort, "%ld", strtol(hex_remotePort, NULL, 16));
-
-                // Method 1 : order is inverse !
-                sprintf(localAddr  , "%d.%d.%d.%d" , hex_localAddr & 0x000000FF , (hex_localAddr  & 0x0000FF00) >> 8, (hex_localAddr  & 0x00FF0000) >> 16, (hex_localAddr  & 0xFF000000) >> 24 );
-                sprintf(remoteAddr  , "%d.%d.%d.%d", hex_remoteAddr & 0x000000FF, (hex_remoteAddr & 0x0000FF00) >> 8, (hex_remoteAddr & 0x00FF0000) >> 16, (hex_remoteAddr & 0xFF000000) >> 24 );
-                
-                // Method 2 :
-                // struct in_addr ipPack;
-
-                // ipPack.s_addr = hex_localAddr;
-                // inet_ntop(AF_INET, &ipPack, localAddr, INET_ADDRSTRLEN);
-
-                // ipPack.s_addr = hex_remoteAddr;
-                // inet_ntop(AF_INET, &ipPack, remoteAddr, INET_ADDRSTRLEN);
+                sscanf(line,"%*s %x:%s %x:%s %*s %*s %*s %*s %*s %*s %d %*s ", &hex_localAddr, &hex_localPort, &hex_remoteAddr, &hex_remotePort, &connection[count].inode);
 
                 connection[count].protocal = protocal;
                 connection[count].version = IPv4;
-                connection[count].inode = inode;
 
-                strcpy(connection[count].local_ip, localAddr);
-                strcpy(connection[count].local_port, localPort);
-                strcpy(connection[count].remote_ip, remoteAddr);
-                strcpy(connection[count].remote_port, remotePort);
+                sprintf(connection[count].local_port, "%ld", strtol(hex_localPort, NULL, 16));
+                sprintf(connection[count].remote_port, "%ld", strtol(hex_remotePort, NULL, 16));
+
+                // Method 1 : order is inverse !
+                // sprintf(localAddr  , "%d.%d.%d.%d" , hex_localAddr & 0x000000FF , (hex_localAddr  & 0x0000FF00) >> 8, (hex_localAddr  & 0x00FF0000) >> 16, (hex_localAddr  & 0xFF000000) >> 24 );
+                // sprintf(remoteAddr  , "%d.%d.%d.%d", hex_remoteAddr & 0x000000FF, (hex_remoteAddr & 0x0000FF00) >> 8, (hex_remoteAddr & 0x00FF0000) >> 16, (hex_remoteAddr & 0xFF000000) >> 24 );
+                
+                // Method 2 :
+                struct in_addr ipPack;
+
+                ipPack.s_addr = hex_localAddr;
+                inet_ntop(AF_INET, &ipPack, connection[count].local_ip, INET_ADDRSTRLEN);
+
+                ipPack.s_addr = hex_remoteAddr;
+                inet_ntop(AF_INET, &ipPack, connection[count].remote_ip, INET_ADDRSTRLEN);
                 count++;
 
                 line = strtok(NULL, "\n");
         }
-        // process_traversal(connection, count);
 }
 
 
@@ -87,31 +81,22 @@ void ipv6(Protocal protocal)
 
         int fd = open(file, O_RDONLY);
         int size = read(fd, buffer, BUFFER_SIZE);
-        
-        char hex_localAddr[50];
-        char hex_localPort[10], localPort[10];
-
-        char hex_remoteAddr[50];
-        char hex_remotePort[10], remotePort[10];
-
-        int inode;
-        
+           
         char *line = strtok(buffer, "\n");
         line = strtok(NULL, "\n"); // remove header 
         
-        // 8802:0120:50D7:0140:36A3:B17C:A9BA:35F1
-
+     
         while(line != NULL)
         {       
+                char hex_localAddr[50], hex_localPort[10], hex_remoteAddr[50], hex_remotePort[10];
+                sscanf(line,"%*s %[^:]%s %[^:]%s %*s %*s %*s %*s %*s %*s %d %*s ", &hex_localAddr, &hex_localPort, &hex_remoteAddr, &hex_remotePort, &connection[count].inode);
                 
-                sscanf(line,"%*s %[^:]%s %[^:]%s %*s %*s %*s %*s %*s %*s %d %*s ", &hex_localAddr, &hex_localPort, &hex_remoteAddr, &hex_remotePort, &inode);
+                connection[count].protocal = protocal;
+                connection[count].version = IPv6;
                 
-                sprintf(localPort, "%ld", strtol(hex_localPort, NULL, 16));
-                sprintf(remotePort, "%ld", strtol(hex_remotePort, NULL, 16));
+                sprintf(connection[count].local_port, "%ld", strtol(hex_localPort, NULL, 16));
+                sprintf(connection[count].remote_port, "%ld", strtol(hex_remotePort, NULL, 16));
                 
-
-                char local_ip[100] = {0};
-                char remote_ip[100] = {0};
                 struct in6_addr ip_localPack, ip_remotePack;
 
                 for(int i = 0 ; i < 16; i++ )
@@ -120,32 +105,16 @@ void ipv6(Protocal protocal)
                         sscanf(hex_remoteAddr + 2*i, "%2hhx", &ip_remotePack.s6_addr[i]);
                 }
 
-                inet_ntop(AF_INET6, &ip_localPack ,local_ip, INET6_ADDRSTRLEN);
-                inet_ntop(AF_INET6, &ip_remotePack,remote_ip, INET6_ADDRSTRLEN);
+                inet_ntop(AF_INET6, &ip_localPack ,connection[count].local_ip , INET6_ADDRSTRLEN);
+                inet_ntop(AF_INET6, &ip_remotePack,connection[count].remote_ip, INET6_ADDRSTRLEN);
                 
-
-                // printf("ipv6:\tremote address = %s:%s\tlocal address = %s:%s \n", hex_remoteAddr, hex_remotePort, hex_localAddr, hex_localPort);
-                printf("ipv6:\tlocal address = %s:%s\tremote address = %s:%s \n", local_ip, localPort, remote_ip, remotePort);
-
-                // connection[count].protocal = protocal;
-                // connection[count].version = IPv6;
-                // connection[count].inode = inode;
-
-                // strcpy(connection[count].local_ip, localAddr);
-                // strcpy(connection[count].local_port, localPort);
-                // strcpy(connection[count].remote_ip, remoteAddr);
-                // strcpy(connection[count].remote_port, remotePort);
-                // count++;
-
                 line = strtok(NULL, "\n");
+                count++;
         }
-        // process_traversal(connection, count);
-
-
 }
 
 
-void process_traversal(Connection* connection, int count)
+void process_traversal()
 {
         DIR *rootdir = opendir("/proc");
         struct dirent* process_dir;
@@ -191,10 +160,7 @@ void process_traversal(Connection* connection, int count)
                                                         if(inode_num == connection[i].inode)
                                                         {
                                                                 connection[i].pid = pid;
-                                                                strcpy(connection[i].programName, filename);
-                                                                printf("%s:%s\t%s:%s\t\t%d/%s\n", connection[i].local_ip, connection[i].local_port, 
-                                                                                                           connection[i].remote_ip, connection[i].remote_port, 
-                                                                                                           connection[i].pid, connection[i].programName);
+                                                                strcpy(connection[i].programName, filename); 
                                                         }
                                                 }
                                         }
@@ -204,4 +170,28 @@ void process_traversal(Connection* connection, int count)
                 closedir(fd_dir);
         }
         closedir(rootdir);
+}
+
+void show_infomation()
+{
+        for(int i = 0 ; i < count; i++)
+        {
+                if ( connection[i].protocal == TCP ){
+                        if (connection[i].version == IPv4) printf("tcp\t");
+                        else printf("tcp6\t");
+                }
+                else if ( connection[i].protocal == UDP){
+                        if (connection[i].version == IPv4) printf("udp\t");
+                        else printf("udp6\t");
+                }
+
+                printf("%s:%-25s%s:%-15s\t%d/%-20s\n", 
+                        connection[i].local_ip, connection[i].local_port, 
+                        connection[i].remote_ip, connection[i].remote_port, 
+                        connection[i].pid, connection[i].programName
+                );
+        
+                // "%-5s %-30s %-30s %s/%s
+        }
+        printf("\n");
 }

@@ -1,6 +1,15 @@
 #include "nettable.h"
 #include "main.h"
 
+
+void help(){
+    printf("Usage: ./hw1 [ OPTIONS ]\n");
+    printf("       ./hw1 [ OPTIONS ] [ FILTER ]\n");
+    printf("  -t, --tcp              List TCP connection\n");
+    printf("  -u, --udp              List UDP connection\n");
+    printf("  -h, --help             this essage\n\n");
+}
+
 int main(int argc, char **argv)
 {
         const char* short_options = "tuhf:";
@@ -13,20 +22,22 @@ int main(int argc, char **argv)
         };
 
         int option;
-        while( ( option = getopt_long(argc, argv, short_options, long_options, NULL) ) != -1 )
-        {
-                switch(option){
-                        case 't': list_connections(TCP);
-                                  printf("TCP! enumTCP = %d\n", TCP); break;
-                        case 'u': printf("UDP! enumUDP = %d\n", UDP); break;
-                        case 'f': printf("Filter!\n"); break;
-                        default: printf("help!\n");
+        if(argc > 2) {
+                while( ( option = getopt_long(argc, argv, short_options, long_options, NULL) ) != -1 )
+                {
+                        switch(option){
+                                case 'h': help(); break;
+                                case 't': list_connections(TCP); break;
+                                case 'u': list_connections(UDP); break;
+                                case 'f': printf("Filter!\n")  ; break;
+                                default : help();
+                        }
                 }
         }
+        else { list_connections(TCP); list_connections(UDP);}
         
         char *filterStr = strdup(argv[argc-1]);
-        printf("filter string = %s\n", filterStr);
-
+        
 
         exit(EXIT_SUCCESS);
 }

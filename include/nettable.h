@@ -15,7 +15,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 
-typedef enum protocal {TCP, UDP} Protocal;
+typedef enum protocal {TCP=2, UDP} Protocal;
 typedef enum version {IPv4, IPv6} Version;
 
 typedef struct connection {
@@ -40,7 +40,8 @@ typedef struct netTable {
 
 void init_netTable(netTable*);
 void list_connections(Protocal);
-void process_traversal(Connection*, int);
+void process_traversal();
+void show_infomation();
 void ipv4(Protocal);
 void ipv6(Protocal);
 #endif
