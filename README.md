@@ -14,7 +14,7 @@ This is a simple netstat(netstat-like). The program lists all the existing TCP a
 
 ## Code Comment
 
-####1. Set the options 
+#### 1. Set the options 
 
 ```c 
         const char* short_options = "tuhf:";
@@ -27,7 +27,8 @@ This is a simple netstat(netstat-like). The program lists all the existing TCP a
 ```
 and use `getopt_long` function call
 
-####2.Traverse all process and find the socket file
+#### 2.Traverse all process and find the socket file
+
 (1) Traverse `/proc/[pid]/stat`, and will see all process `filename` and `process id`
 
 (2) Traverse `/proc/[pid]/fd`, and you can `read all symbolic link to the file`, and you can get the inode of each socket.
