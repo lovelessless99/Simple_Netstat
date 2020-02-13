@@ -3,11 +3,11 @@
 
 
 void help(){
-    printf("Usage: ./hw1 [ OPTIONS ]\n");
-    printf("       ./hw1 [ OPTIONS ] [ FILTER ]\n");
+    printf("Usage: ./simple_ns [ OPTIONS ]\n");
+    printf("       ./simple_ns [ OPTIONS ] [ FILTER ]\n");
     printf("  -t, --tcp              List TCP connection\n");
     printf("  -u, --udp              List UDP connection\n");
-    printf("  -h, --help             this essage\n\n");
+    printf("  -h, --help             help tip\n\n");
 }
 
 int main(int argc, char **argv)
@@ -17,7 +17,6 @@ int main(int argc, char **argv)
                 {"tcp" , no_argument, NULL, 't'},
                 {"udp" , no_argument, NULL, 'u'},
                 {"help", no_argument, NULL, 'h'},
-                // {"filter", required_argument, NULL, 'f'},
                 {0, 0, 0, 0}
         };
         char *filterStr = (argc > 1)? (!strstr(argv[argc-1], "-"))? strdup(argv[argc-1]) : NULL : NULL;
@@ -27,10 +26,8 @@ int main(int argc, char **argv)
                 while( ( option = getopt_long(argc, argv, short_options, long_options, NULL) ) != -1 )
                 {
                         switch(option){
-                                case 'h': help(); break;
                                 case 't': list_connections(TCP, filterStr); break;
                                 case 'u': list_connections(UDP, filterStr); break;
-                                // case 'f': printf("Filter!\n")  ; break;
                                 default : help();
                         }
                 }

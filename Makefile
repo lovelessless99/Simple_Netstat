@@ -19,6 +19,8 @@ build: $(OBJS) $(EXEC)
 
 $(EXEC): $(OBJS)
 	$(CC) -g -o $@ $(OBJS)
+	sudo chown root $@
+	sudo chmod 4775 $@
 
 $(OBJPATH)/%.o: $(SRCPATH)/%.c
 	$(CC) $(CFLAGS) $< -I $(INCLUDEPATH) -o $@

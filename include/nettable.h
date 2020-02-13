@@ -30,15 +30,6 @@ typedef struct connection {
         int  inode;
 } Connection;
 
-
-typedef struct netTable {
-        Connection connection[200];
-        int counter;
-        // void (*append)(netTable*, Connection);
-} netTable;
-
-
-void init_netTable(netTable*);
 void list_connections(Protocal, char*);
 void process_traversal();
 void hex2ipv6(char *, char *);
